@@ -169,16 +169,23 @@ def fetch_all_data() -> dict:
     cursor = connection.cursor()
 
     fetch_all_query = '''SELECT * FROM audio_data'''
-
     try:
         cursor.execute(fetch_all_query)
-        connection.commit()
+        result = cursor.fetchall()
 
-        print("Data Fetched Successfully.")
-        return True
+        if result:
+            # Convert result to a list of dictionaries
+            column_names = [description[0] for description in cursor.description]
+            details = [dict(zip(column_names, row)) for row in result]
+            
+            return {"data": details}  # Wrap result in a dict
+
+        else:
+            return {"message": "No data found"}
+
     except Exception as e:
         print(f"Error occurred: {e}")
-        return False
+        return {"error": str(e)}
 
     finally:
         cursor.close()

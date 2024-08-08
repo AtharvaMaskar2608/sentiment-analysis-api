@@ -177,6 +177,8 @@ def get_audio_transcript_analysis(file_bytes: bytes, filename: str, audio_file_u
 
         if response:
             update_subprocess_to_in_progress = update_processing_status(audio_file_url, "Completed")
+            response = update_sub_processing_status(audio_file_url, "Completed")
+
 
         print(response_data)
 
