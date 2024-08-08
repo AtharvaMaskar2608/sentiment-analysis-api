@@ -7,8 +7,12 @@ import io
 from dotenv import load_dotenv
 from utils import *
 
+from db import *
+
 # Load environment variables
 load_dotenv()
+
+AUDIO_FILE_URL_PATH = "https://konnect.knowlarity.com/konnect/api/v1/786824/fc8cb51d-0fbf-42ec-a41e-a24e3fdc8f05/"
 
 # Initialize OpenAI client
 openai_api_key = os.getenv("OPENAI_API_KEY")
@@ -105,12 +109,17 @@ async def get_analysis(data: TranscriptRequest, background_tasks: BackgroundTask
         raise HTTPException(status_code=500, detail=str(e))
 
 
-def get_audio_transcript_analysis(file_bytes: bytes, filename: str):
+def get_audio_transcript_analysis(file_bytes: bytes, filename: str, audio_file_url: str):
     try:
+
         file_io = io.BytesIO(file_bytes)
         file_io.name = filename
 
         agent_name = ""
+
+        # UPDATE SUBPROCESS TO GENERATING TRANSCRIPTS
+        response = update_sub_processing_status(audio_file_url, "Generating Transcripts (1/6)")
+
         # Generate transcript
         transcription = client.audio.translations.create(
             model="whisper-1",
@@ -119,21 +128,34 @@ def get_audio_transcript_analysis(file_bytes: bytes, filename: str):
         
         audio_transcripts = transcription.text
 
+        # UPDATE SUBPROCESS TO GENERATING SUMMARY
+        response = update_sub_processing_status(audio_file_url, "Generating Summary (2/6)")
         # Generate summary
         summary = generate_sumary(audio_transcripts, agent_name)
+
+        # UPDATE SUBPROCESS TO GREETING SCORE
+        response = update_sub_processing_status(audio_file_url, "Greeting Score (3/6)")
 
         # Greeting score
         greeting_score = check_greeting(audio_transcripts, summary)
 
         # Empathy score
+        # UPDATE SUBPROCESS TO EMPATHY SCORE
+        response = update_sub_processing_status(audio_file_url, "Empathy Score (4/6)")
         empathy_score = check_empathy(audio_transcripts, summary)
 
         # Closure score
+        # UPDATE SUBPROCESS TO EMPATHY SCORE
+        response = update_sub_processing_status(audio_file_url, "Closure Score (5/6)")
         closure_score = check_closure(audio_transcripts, summary)
 
         # Query Type
+        # UPDATE SUBPROCESS TO QUERY TYPE
+        response = update_sub_processing_status(audio_file_url, "Query Type (6/6)")
         query_type = get_query_type(audio_transcripts)
 
+        # UPDATE SUBPROCESS TO QUERY TYPE
+        response = update_sub_processing_status(audio_file_url, "Finishing Up.")
         response_data = {
             "transcript": audio_transcripts,
             "greeting_score": greeting_score,
@@ -143,12 +165,23 @@ def get_audio_transcript_analysis(file_bytes: bytes, filename: str):
         }
 
 
-        # PUSH IT TO DATABASE. 
+        # PUSH ALL THE VALUES TO THE DATABASE
+        audio_kpis = {
+            "greeting_score": greeting_score, 
+            "empathy_score": empathy_score, 
+            "closure_score": closure_score, 
+            "query_type": query_type
+        }
 
+        response = update_analysis_data(audio_file_url, audio_transcripts, summary, audio_kpis)
+
+        if response:
+            update_subprocess_to_in_progress = update_processing_status(audio_file_url, "Completed")
 
         print(response_data)
 
     except Exception as e:
+        update_subprocess_to_in_progress = update_processing_status(audio_file_url, "Failed")
         print(f"Error processing file: {e}")
 
 @app.post("/audio-sentiment-analysis/")
@@ -160,8 +193,13 @@ async def audio_sentiment_analysis(background_tasks: BackgroundTasks, file: Uplo
         file_bytes = await file.read()  # Asynchronously read file
         filename = file.filename
 
+        file_url = f"{AUDIO_FILE_URL_PATH}{filename[:-4]}"
+      
+        # UPDATE THE SUBPROCESS TO "IN PROGRESS"
+        update_subprocess_to_in_progress = update_processing_status(file_url, "In Progress")
+
         # Add the background task
-        background_tasks.add_task(get_audio_transcript_analysis, file_bytes, filename)
+        background_tasks.add_task(get_audio_transcript_analysis, file_bytes, filename, file_url)
 
         return JSONResponse(
             content={"message": "Sentiment analysis started successfully"},
