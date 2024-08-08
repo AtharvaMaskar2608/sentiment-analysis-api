@@ -1,52 +1,30 @@
-from flask import Flask, request, jsonify
-import os
-from openai import OpenAI
-from dotenv import load_dotenv
-import io
-from pydub import AudioSegment
+import streamlit as st
+import pandas as pd
+from io import StringIO
+import requests
+get_audio_sentiment_analsysis = "http://localhost:8000/audio-sentiment-analysis/"
+AUDIO_FILE_PATH = "/home/choice/Desktop/sentiment-analysis-api/data/test.txt"
 
+# SINGLE FILE, CAN LATER USE FOR MULTIPLE FILES.
+st.title("Audio Sentiment Analysis")
 
-load_dotenv()
+with st.form("my-form"):
+    uploaded_file = st.file_uploader("Choose a file")
 
-openai_api_key = os.getenv("OPENAI_API_KEY")
-client = OpenAI(api_key=openai_api_key)
+    submit_button = st.form_submit_button("Submit")
 
-app = Flask(__name__)
+    if submit_button and uploaded_file is not None:
+        AUDIO_FILE_PATH = uploaded_file.name
+            # Prepare the files dictionary
+        files = {
+            'file': (AUDIO_FILE_PATH, uploaded_file, 'audio/mp3')
+        }
+        # Send the POST request
+        response = requests.post(get_audio_sentiment_analsysis, files=files)
 
-@app.route('/upload', methods=['POST'])
-def upload_file():
-    if 'file' not in request.files:
-        return jsonify({"error": "No file part"}), 400
-    
-    file = request.files['file']
-    
-    if file.filename == '':
-        return jsonify({"error": "No selected file"}), 400
-    
-    if file:
-        # try:
-            # Read the file into an io.BytesIO object
-            file_bytes = file.read()
-            file_io = io.BytesIO(file_bytes)
-            file_io.name = file.filename  # Add a name attribute to mimic a file object
+        if response.status_code == 201:
+            st.success("Sentiment Analysis process has successfully started on the file, check your dashboard for more details.")
 
+        # Print the JSON response from the FastAPI endpoint
+        print(response.json())
 
-            # 1. GENERATE TRANSCRIPT
-            transcription = client.audio.translations.create(
-                model="whisper-1", 
-                file=file_io
-            )
-            audio_transcripts = transcription.text
-            
-            response_data = {   
-                "message": "Transcript generated successfully",
-                "file_name": file.filename,
-                "transcript": audio_transcripts
-            }
-            return jsonify(response_data), 201
-
-        # except Exception as e:
-        #     return jsonify({"error": str(e)}), 500
-
-if __name__ == '__main__':
-    app.run(debug=True)
