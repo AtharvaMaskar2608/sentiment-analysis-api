@@ -1,6 +1,4 @@
 import streamlit as st
-import pandas as pd
-from io import StringIO
 import requests
 import os 
 from dotenv import load_dotenv
