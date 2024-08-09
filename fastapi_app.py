@@ -211,6 +211,18 @@ async def audio_sentiment_analysis(background_tasks: BackgroundTasks, file: Uplo
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.get("/")
+async def home():
+
+    try:
+        return JSONResponse(
+            content={"Working"}, 
+            status_code=201
+        )
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 # Run the server with: uvicorn main:app --reload
 if __name__ == "__main__":
     import uvicorn
