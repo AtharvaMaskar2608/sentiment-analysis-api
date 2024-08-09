@@ -4,6 +4,8 @@ import mysql.connector
 from mysql.connector import Error
 from config import DB_HOST, DB_USER, DB_PASSWORD, DB_NAME
 
+print(DB_HOST)
+
 def create_connection():
     """Create a database connection to the MySQL database."""
     connection = None

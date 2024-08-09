@@ -1,16 +1,13 @@
 import streamlit as st
-import pandas as pd
-from io import StringIO
 import requests
-
+import os 
+from dotenv import load_dotenv
 from db import *
 
+load_dotenv()
 
-get_audio_sentiment_analsysis = "http://localhost:8000/audio-sentiment-analysis/"
-AUDIO_FILE_URL_PATH = "https://konnect.knowlarity.com/konnect/api/v1/786824/fc8cb51d-0fbf-42ec-a41e-a24e3fdc8f05/"
-
-AUDIO_FILE_PATH = "/home/choice/Desktop/sentiment-analysis-api/data/test.txt"
-
+get_audio_sentiment_analsysis = os.getenv("ENDPOINT")
+AUDIO_FILE_URL_PATH = "https://konnect.knowlarity.com/konnect/api/v1/786824/"
 # SINGLE FILE, CAN LATER USE FOR MULTIPLE FILES.
 st.title("Audio Sentiment Analysis")
 

@@ -2,7 +2,7 @@ from openai import OpenAI
 import json
 client = OpenAI()
 
-QUERY_TYPE_PATH = "/home/choice/Desktop/sentiment-analysis-api/data/type-query.json"
+QUERY_TYPE_PATH = "data/type-query.json"
 
 def get_query_type(transcript: str) -> str:
     """
