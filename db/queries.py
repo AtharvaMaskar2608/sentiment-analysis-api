@@ -146,7 +146,7 @@ def update_analysis_data(audio_file_url:str, audio_transcript: str, audio_summar
         cursor.execute(update_query, data)
         connection.commit()
 
-        print("Sub Process Updated Successfully")
+        print("Analysis data updated successfully!")
         return True
     except Exception as e:
         print(f"Error occurred: {e}")

@@ -1,0 +1,62 @@
+[
+    {
+        "query-tag": "Login Guidance", 
+        "description": "The customer needs help with logging in"
+    },
+    {
+        "query-tag": "Brokerage", 
+        "description": "The customer wants help with the brokerage of the platform."
+    }, 
+    {
+        "query-tag": "Order", 
+        "description": "The customer has queries regarding the orders he placed on the platform."
+    }, 
+    {
+        "query-tag": "Brokerage", 
+        "description": "The customer wants help with the brokerage of the platform."
+    }, 
+    {
+        "query-tag": "Account Closure", 
+        "description": "The customer has queries regarding closure of his account."
+    }, 
+    {
+        "query-tag": "Onboarding", 
+        "description": "The customer needs help with onboarding on the platform."
+    }, 
+    {
+        "query-tag": "Report cml", 
+        "description": "The customer wants to know more about the CML report."
+    }, 
+    {
+        "query-tag": "Account Query", 
+        "description": "The customer wants to know more about his account."
+    }, 
+    {
+        "query-tag": "Account Opening", 
+        "description": "The customer wants help with opening his account."
+    }, 
+    {
+        "query-tag": "Payout", 
+        "description": "The customer has queries regarding the payout of the platform."
+    }, 
+    {
+        "query-tag": "Order Stop Loss", 
+        "description": "The customer has queries regarding the stop loss on his order."
+    }, 
+    {
+        "query-tag": "IPO", 
+        "description": "The customer has queries regarding the IPO."
+    }, 
+    {
+        "query-tag": "Account Suspensions", 
+        "description": "The customer has queries regarding account suspension."
+    }, 
+    {
+        "query-tag": "Franchise", 
+        "description": "The customer has queries regarding the franchise."
+    }, 
+    {
+        "query-tag": "Fund Settlement", 
+        "description": "The customer has queries regarding fund settlement."
+    }
+]

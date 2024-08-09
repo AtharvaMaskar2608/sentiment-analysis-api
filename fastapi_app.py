@@ -12,7 +12,7 @@ from db import *
 # Load environment variables
 load_dotenv()
 
-AUDIO_FILE_URL_PATH = "https://konnect.knowlarity.com/konnect/api/v1/786824/fc8cb51d-0fbf-42ec-a41e-a24e3fdc8f05/"
+AUDIO_FILE_URL_PATH = "https://konnect.knowlarity.com/konnect/api/v1/786824/"
 
 # Initialize OpenAI client
 openai_api_key = os.getenv("OPENAI_API_KEY")
@@ -120,6 +120,9 @@ def get_audio_transcript_analysis(file_bytes: bytes, filename: str, audio_file_u
         # UPDATE SUBPROCESS TO GENERATING TRANSCRIPTS
         response = update_sub_processing_status(audio_file_url, "Generating Transcripts (1/6)")
 
+        if not response:
+            print("Failed: Transcripts")
+
         # Generate transcript
         transcription = client.audio.translations.create(
             model="whisper-1",
@@ -130,11 +133,16 @@ def get_audio_transcript_analysis(file_bytes: bytes, filename: str, audio_file_u
 
         # UPDATE SUBPROCESS TO GENERATING SUMMARY
         response = update_sub_processing_status(audio_file_url, "Generating Summary (2/6)")
+        if not response:
+            print("Failed: Summary")
+
         # Generate summary
         summary = generate_sumary(audio_transcripts, agent_name)
 
         # UPDATE SUBPROCESS TO GREETING SCORE
         response = update_sub_processing_status(audio_file_url, "Greeting Score (3/6)")
+        if not response:
+            print("Failed: Greeting Score")
 
         # Greeting score
         greeting_score = check_greeting(audio_transcripts, summary)
@@ -142,20 +150,29 @@ def get_audio_transcript_analysis(file_bytes: bytes, filename: str, audio_file_u
         # Empathy score
         # UPDATE SUBPROCESS TO EMPATHY SCORE
         response = update_sub_processing_status(audio_file_url, "Empathy Score (4/6)")
+        if not response:
+            print("Failed: Empathy")
         empathy_score = check_empathy(audio_transcripts, summary)
 
         # Closure score
         # UPDATE SUBPROCESS TO EMPATHY SCORE
         response = update_sub_processing_status(audio_file_url, "Closure Score (5/6)")
+
+        if not response:
+            print("Failed: Closure")
         closure_score = check_closure(audio_transcripts, summary)
 
         # Query Type
         # UPDATE SUBPROCESS TO QUERY TYPE
         response = update_sub_processing_status(audio_file_url, "Query Type (6/6)")
+        if not response:
+            print("Failed: Query")
         query_type = get_query_type(audio_transcripts)
 
         # UPDATE SUBPROCESS TO QUERY TYPE
         response = update_sub_processing_status(audio_file_url, "Finishing Up.")
+        if not response:
+            print("Failed: Finishing Up")
         response_data = {
             "transcript": audio_transcripts,
             "greeting_score": greeting_score,
@@ -179,7 +196,8 @@ def get_audio_transcript_analysis(file_bytes: bytes, filename: str, audio_file_u
             update_subprocess_to_in_progress = update_processing_status(audio_file_url, "Completed")
             response = update_sub_processing_status(audio_file_url, "Completed")
 
-
+        else:
+            print("Failed")
         print(response_data)
 
     except Exception as e:
