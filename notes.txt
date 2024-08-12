@@ -1,0 +1,6 @@
+aws ecr get-login-password --region ap-south-1 |sudo docker login --username AWS --password-stdin 485481328856.dkr.ecr.ap-south-1.amazonaws.com
+sudo docker build -t signature-ocr/api:v1.0.2-prod .
+sudo docker tag signature-ocr/api:v1.0.2-prod  485481328856.dkr.ecr.ap-south-1.amazonaws.com/signature-ocr/api:v1.0.2-prod
+sudo docker push  485481328856.dkr.ecr.ap-south-1.amazonaws.com/signature-ocr/api:v1.0.2-prod
+sudo docker pull  485481328856.dkr.ecr.ap-south-1.amazonaws.com/signature-ocr/api:v1.0.2-prod
+docker run --publish 9099:9099 --restart always -d --name signature-ocr-api-v1.0.0-prod 485481328856.dkr.ecr.ap-south-1.amazonaws.com/signature-ocr/api:v1.0.0-prod

@@ -4,6 +4,6 @@ import pandas as pd
 
 response = fetch_all_data()
 
-df = pd.DataFrame(response['data'])
+# df = pd.DataFrame(response['data'])
 
-st.table(df)
+# st.table(df)

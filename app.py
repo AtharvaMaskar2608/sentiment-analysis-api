@@ -22,16 +22,18 @@ with st.form("my-form"):
         audio_sentiment_template = "audio_sentiment_analysis_customersupport"
         audio_processing_status = "Not Started"
 
-        create_entry_response = create_entry(audio_file_url=file_url, audio_sentiment_template=audio_sentiment_template, audio_processing_status=audio_processing_status)
+        # create_entry_response = create_entry(audio_file_url=file_url, audio_sentiment_template=audio_sentiment_template, audio_processing_status=audio_processing_status)
 
 
         # Prepare the files dictionary
         files = {
-            'file': (file_name, uploaded_file, 'audio/mp3'), 
+            'file': (file_name, uploaded_file, 'audio/mpeg'), 
         }
+
+        print("File: ", files)
         # Send the POST request
         response = requests.post(get_audio_sentiment_analsysis, files=files)
-
+        print(response)
         if response.status_code == 201:
             if create_entry_response:
                 st.success("Sentiment Analysis process has successfully started on the file, check your dashboard for more details.")
@@ -39,3 +41,8 @@ with st.form("my-form"):
                 st.error("There was an error processing file, Please try again later.")
         
         print(response.json())
+
+
+# 
+# 
+# curl --location 'localhost:8000/audio-sentiment-analysis' --header 'Content-Type: multipart/form-data' -F 'file=@"/home/choice/Desktop/sentiment-analysis-api/data/0fc2aa8c-1cab-43a0-b8e7-f3358e0b074b.mp3"'

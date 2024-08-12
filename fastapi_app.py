@@ -108,7 +108,6 @@ async def get_analysis(data: TranscriptRequest, background_tasks: BackgroundTask
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-
 def get_audio_transcript_analysis(file_bytes: bytes, filename: str, audio_file_url: str):
     try:
 
@@ -210,10 +209,15 @@ async def audio_sentiment_analysis(background_tasks: BackgroundTasks, file: Uplo
         raise HTTPException(status_code=400, detail="No selected file")
 
     try:
-        file_bytes = await file.read()  # Asynchronously read file
+        # 1. CREATE AN ENTRY
         filename = file.filename
-
         file_url = f"{AUDIO_FILE_URL_PATH}{filename[:-4]}"
+        audio_sentiment_template = "audio_sentiment_analysis_customersupport"
+        audio_processing_status = "Not Started"
+        create_entry_response = create_entry(audio_file_url=file_url, audio_sentiment_template=audio_sentiment_template, audio_processing_status=audio_processing_status)
+
+        file_bytes = await file.read()  # Asynchronously read file
+
       
         # UPDATE THE SUBPROCESS TO "IN PROGRESS"
         update_subprocess_to_in_progress = update_processing_status(file_url, "In Progress")
