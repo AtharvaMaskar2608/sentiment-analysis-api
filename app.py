@@ -4,6 +4,12 @@ import os
 from dotenv import load_dotenv
 from db import *
 
+
+from utils import setup_logger
+
+# SETTING UP THE LOGGERR
+logger = setup_logger()
+
 load_dotenv()
 
 get_audio_sentiment_analsysis = os.getenv("ENDPOINT")
@@ -30,17 +36,16 @@ with st.form("my-form"):
             'file': (file_name, uploaded_file, 'audio/mpeg'), 
         }
 
-        print("File: ", files)
         # Send the POST request
         response = requests.post(get_audio_sentiment_analsysis, files=files)
-        print(response)
+
         if response.status_code == 201:
-            if create_entry_response:
                 st.success("Sentiment Analysis process has successfully started on the file, check your dashboard for more details.")
-            else:
+                logger.info(f"Sentiment Analysis Process has successfully started for the URL: {file_url}")
+        else:
                 st.error("There was an error processing file, Please try again later.")
+                logger.error(f"There was an errror processing the file with URL: {file_url}")
         
-        print(response.json())
 
 
 # 

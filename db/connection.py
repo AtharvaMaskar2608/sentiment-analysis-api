@@ -4,7 +4,10 @@ import mysql.connector
 from mysql.connector import Error
 from config import DB_HOST, DB_USER, DB_PASSWORD, DB_NAME
 
-print(DB_HOST)
+from utils import setup_logger
+
+# SETTING UP THE LOGGERR
+logger = setup_logger()
 
 def create_connection():
     """Create a database connection to the MySQL database."""
@@ -17,7 +20,7 @@ def create_connection():
             database=DB_NAME
         )
         if connection.is_connected():
-            print("Connected to MySQL database")
+            logger.info("Connected to database successfully!")
     except Error as e:
-        print(f"Error: '{e}' occurred while connecting to the database")
+        logger.error(f"Error: '{e}' occurred while connecting to the database")
     return connection

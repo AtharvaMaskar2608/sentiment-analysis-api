@@ -9,9 +9,15 @@ from utils import *
 
 from db import *
 
+from utils import setup_logger
+
+# SETTING UP THE LOGGERR
+logger = setup_logger()
+
 # Load environment variables
 load_dotenv()
 
+PORT = os.getenv("PORT")
 AUDIO_FILE_URL_PATH = "https://konnect.knowlarity.com/konnect/api/v1/786824/"
 
 # Initialize OpenAI client
@@ -35,13 +41,12 @@ def get_transcript(file_bytes: bytes, filename: str):
         )
         audio_transcripts = transcription.text
 
-        print(audio_transcripts)
 
         # Save or process the transcript as needed
         # For example, save to a database or file
 
     except Exception as e:
-        print(f"Error processing file: {e}")
+        logger.error(f"Error generating transcripts for: {filename}")
 
 @app.post("/generate-transcript/")
 async def generate_transcript(background_tasks: BackgroundTasks, file: UploadFile = File(...)):
@@ -88,7 +93,7 @@ def get_analysis_from_transcript(transcript: str, agent_name: str):
             "query_type": query_type
         }
 
-    print(response_data)
+    logger.info(f"{response_data}")
 
 
 @app.post("/get-analysis-from-transcript/")
@@ -119,9 +124,6 @@ def get_audio_transcript_analysis(file_bytes: bytes, filename: str, audio_file_u
         # UPDATE SUBPROCESS TO GENERATING TRANSCRIPTS
         response = update_sub_processing_status(audio_file_url, "Generating Transcripts (1/6)")
 
-        if not response:
-            print("Failed: Transcripts")
-
         # Generate transcript
         transcription = client.audio.translations.create(
             model="whisper-1",
@@ -130,48 +132,48 @@ def get_audio_transcript_analysis(file_bytes: bytes, filename: str, audio_file_u
         
         audio_transcripts = transcription.text
 
+        logger.info(f"Generated transcripts for file: {filename}")
+
         # UPDATE SUBPROCESS TO GENERATING SUMMARY
         response = update_sub_processing_status(audio_file_url, "Generating Summary (2/6)")
-        if not response:
-            print("Failed: Summary")
+
 
         # Generate summary
         summary = generate_sumary(audio_transcripts, agent_name)
+        logger.info(f"Generated Summary for file: {filename}")
 
         # UPDATE SUBPROCESS TO GREETING SCORE
         response = update_sub_processing_status(audio_file_url, "Greeting Score (3/6)")
-        if not response:
-            print("Failed: Greeting Score")
+
 
         # Greeting score
         greeting_score = check_greeting(audio_transcripts, summary)
+        logger.info(f"Generated Greeting Score: {filename}")
 
         # Empathy score
         # UPDATE SUBPROCESS TO EMPATHY SCORE
         response = update_sub_processing_status(audio_file_url, "Empathy Score (4/6)")
-        if not response:
-            print("Failed: Empathy")
         empathy_score = check_empathy(audio_transcripts, summary)
+        logger.info(f"Generated Empathy Score: {filename}")
 
         # Closure score
         # UPDATE SUBPROCESS TO EMPATHY SCORE
         response = update_sub_processing_status(audio_file_url, "Closure Score (5/6)")
 
-        if not response:
-            print("Failed: Closure")
-        closure_score = check_closure(audio_transcripts, summary)
 
+        closure_score = check_closure(audio_transcripts, summary)
+        logger.info(f"Generated Closure Score: {filename}")
         # Query Type
         # UPDATE SUBPROCESS TO QUERY TYPE
         response = update_sub_processing_status(audio_file_url, "Query Type (6/6)")
-        if not response:
-            print("Failed: Query")
+
+
         query_type = get_query_type(audio_transcripts)
+        logger.info(f"Generated query type: {filename}")
 
         # UPDATE SUBPROCESS TO QUERY TYPE
         response = update_sub_processing_status(audio_file_url, "Finishing Up.")
-        if not response:
-            print("Failed: Finishing Up")
+
         response_data = {
             "transcript": audio_transcripts,
             "greeting_score": greeting_score,
@@ -194,20 +196,21 @@ def get_audio_transcript_analysis(file_bytes: bytes, filename: str, audio_file_u
         if response:
             update_subprocess_to_in_progress = update_processing_status(audio_file_url, "Completed")
             response = update_sub_processing_status(audio_file_url, "Completed")
-
+            logger.info(f"Completed analysis for: {filename}")
         else:
-            print("Failed")
-        print(response_data)
+            logger.error(f"Failed to generate analysis for: {filename}")
+        logger.info(f"{response}")
 
     except Exception as e:
         update_subprocess_to_in_progress = update_processing_status(audio_file_url, "Failed")
-        print(f"Error processing file: {e}")
+        logger.error(f"There was an error generating analysis for: {filename}")
 
 @app.post("/audio-sentiment-analysis/")
 async def audio_sentiment_analysis(background_tasks: BackgroundTasks, file: UploadFile = File(...)):
     if file.filename == '':
+        file_url = f"{AUDIO_FILE_URL_PATH}{file.filename[:-4]}"
+        logger.error(f"No file selected for file with filename: {file_url}")
         raise HTTPException(status_code=400, detail="No selected file")
-
     try:
         # 1. CREATE AN ENTRY
         filename = file.filename
@@ -215,6 +218,11 @@ async def audio_sentiment_analysis(background_tasks: BackgroundTasks, file: Uplo
         audio_sentiment_template = "audio_sentiment_analysis_customersupport"
         audio_processing_status = "Not Started"
         create_entry_response = create_entry(audio_file_url=file_url, audio_sentiment_template=audio_sentiment_template, audio_processing_status=audio_processing_status)
+
+        if create_entry_response:
+            logger.info(f"Entry created successfully for URL: {file_url}")
+        else:
+            logger.error(f"Failed to create an entry for URL: {file_url}")
 
         file_bytes = await file.read()  # Asynchronously read file
 
@@ -233,19 +241,15 @@ async def audio_sentiment_analysis(background_tasks: BackgroundTasks, file: Uplo
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.get("/")
-async def home():
+@app.get("/health-check")
+async def healthcheck():
 
-    try:
         return JSONResponse(
-            content={"Working"}, 
-            status_code=201
+            content={"message": "Audio Sentiment Analysis Healthcheck"},
+            status_code=200
         )
-
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
 
 # Run the server with: uvicorn main:app --reload
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="127.0.0.1", port=8000, reload=True)
+    uvicorn.run(app, host="127.0.0.1", port=PORT, reload=True)

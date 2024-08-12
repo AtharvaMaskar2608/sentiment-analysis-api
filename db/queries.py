@@ -1,5 +1,9 @@
 from db import create_connection
 import json
+from utils import setup_logger
+
+# SETTING UP THE LOGGERR
+logger = setup_logger()
 
 def create_entry(audio_file_url: str, audio_sentiment_template: str, audio_processing_status: str) -> bool:
     """
@@ -28,10 +32,10 @@ def create_entry(audio_file_url: str, audio_sentiment_template: str, audio_proce
         cursor.execute(insert_query, data)
         connection.commit()
 
-        print("Entry Created Successfully")
+        logger.info("Entry Created Successfully")
         return True
     except Exception as e:
-        print(f"Error occurred: {e}")
+        logger.error(f"Error occurred: {e}")
         return False
 
     finally:
@@ -66,10 +70,10 @@ def update_processing_status(audio_file_url: str, updated_processing_status: str
         cursor.execute(update_query, data)
         connection.commit()
 
-        print("Process Updated Successfully")
+        logger.info("Process Updated Successfully")
         return True
     except Exception as e:
-        print(f"Error occurred: {e}")
+        logger.error(f"Error occurred: {e}")
         return False
 
     finally:
@@ -104,10 +108,10 @@ def update_sub_processing_status(audio_file_url: str, updated_sub_processing_sta
         cursor.execute(update_query, data)
         connection.commit()
 
-        print("Sub Process Updated Successfully")
+        logger.info("Sub Process Updated Successfully")
         return True
     except Exception as e:
-        print(f"Error occurred: {e}")
+        logger.error(f"Error occurred: {e}")
         return False
 
     finally:
@@ -146,10 +150,10 @@ def update_analysis_data(audio_file_url:str, audio_transcript: str, audio_summar
         cursor.execute(update_query, data)
         connection.commit()
 
-        print("Analysis data updated successfully!")
+        logger.info("Analysis data updated successfully!")
         return True
     except Exception as e:
-        print(f"Error occurred: {e}")
+        logger.error(f"Error occurred: {e}")
         return False
 
     finally:
@@ -184,7 +188,7 @@ def fetch_all_data() -> dict:
             return {"message": "No data found"}
 
     except Exception as e:
-        print(f"Error occurred: {e}")
+        logger.error(f"Error occurred: {e}")
         return {"error": str(e)}
 
     finally:
