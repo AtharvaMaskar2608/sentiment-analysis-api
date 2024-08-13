@@ -2,7 +2,7 @@
 import logging
 from logging.handlers import TimedRotatingFileHandler
 
-def setup_logger(name='sentiment_analysis_logger', log_file='sentiment_analysis.log', level=logging.INFO):
+def setup_logger(name='sentiment_analysis_logger', log_file='logs/sentiment_analysis.log', level=logging.INFO):
     """Setup a shared logger."""
     
     logger = logging.getLogger(name)

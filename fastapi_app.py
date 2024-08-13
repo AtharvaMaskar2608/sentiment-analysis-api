@@ -240,10 +240,17 @@ async def audio_sentiment_analysis(background_tasks: BackgroundTasks, file: Uplo
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+    
+
+@app.get("/fetch-records/")
+def get_all_records():
+    records = fetch_all_data()
+
+    return records
 
 @app.get("/health-check")
 async def healthcheck():
-
+        logger.info("Healthcheck accessed")
         return JSONResponse(
             content={"message": "Audio Sentiment Analysis Healthcheck"},
             status_code=200

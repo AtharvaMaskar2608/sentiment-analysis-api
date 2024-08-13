@@ -1,8 +1,9 @@
 from openai import OpenAI
 import json
 client = OpenAI()
+import os
 
-QUERY_TYPE_PATH = "data/type-query.json"
+QUERY_TYPE_PATH = "storage/type-query.json"
 
 def get_query_type(transcript: str) -> str:
     """
